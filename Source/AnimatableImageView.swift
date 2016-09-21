@@ -1,7 +1,8 @@
 import UIKit
+import Foundation
 
 /// A subclass of `UIImageView` that can be animated using an image name string or raw data.
-public class AnimatableImageView: UIImageView {
+open class AnimatableImageView: UIImageView {
   /// Proxy object for preventing a reference cycle between the CADisplayLink and AnimatableImageView.
   /// Source: http://merowing.info/2015/11/the-beauty-of-imperfection/
   class TargetProxy {
@@ -31,18 +32,18 @@ public class AnimatableImageView: UIImageView {
   }()
 
   /// The size of the frame cache.
-  public var framePreloadCount = 50
+  open var framePreloadCount = 50
 
   /// Specifies whether the GIF frames should be pre-scaled to save memory. Default is **true**.
-  public var needsPrescaling = true
+  open var needsPrescaling = true
 
   /// A computed property that returns whether the image view is animating.
-  public var isAnimatingGIF: Bool {
+  open var isAnimatingGIF: Bool {
     return !displayLink.isPaused
   }
 
   /// A computed property that returns the total number of frames in the GIF.
-  public var frameCount: Int {
+  open var frameCount: Int {
     return animator?.frameCount ?? 0
   }
 
@@ -50,9 +51,9 @@ public class AnimatableImageView: UIImageView {
   /// The file name should include the `.gif` extension.
   ///
   /// - parameter imageName: The name of the GIF file. The method looks for the file in the app bundle.
-  public func prepareForAnimation(withGIFNamed imageName: String) {
+  open func prepareForAnimation(withGIFNamed imageName: String) {
     guard let extensionRemoved = imageName.components(separatedBy: ".")[safe: 0],
-      let imagePath = Bundle.main.urlForResource(extensionRemoved, withExtension: "gif"),
+      let imagePath = Bundle.main.url(forResource: extensionRemoved, withExtension: "gif"),
       let data = try? Data(contentsOf: imagePath) else { return }
 
     prepareForAnimation(withGIFData: data)
@@ -61,7 +62,7 @@ public class AnimatableImageView: UIImageView {
   /// Prepares the frames using raw GIF image data, without starting the animation.
   ///
   /// - parameter data: GIF image data.
-  public func prepareForAnimation(withGIFData imageData: Data) {
+  open func prepareForAnimation(withGIFData imageData: Data) {
     image = UIImage(data: imageData)
     animator = Animator(data: imageData, size: frame.size, contentMode: contentMode, framePreloadCount: framePreloadCount)
     animator?.needsPrescaling = needsPrescaling
@@ -72,7 +73,7 @@ public class AnimatableImageView: UIImageView {
   /// Prepares the frames using a GIF image file name and starts animating the image view.
   ///
   /// - parameter imageName: The name of the GIF file. The method looks for the file in the app bundle.
-  public func animate(withGIFNamed imageName: String) {
+  open func animate(withGIFNamed imageName: String) {
     prepareForAnimation(withGIFNamed: imageName)
     startAnimatingGIF()
   }
@@ -80,30 +81,30 @@ public class AnimatableImageView: UIImageView {
   /// Prepares the frames using raw GIF image data and starts animating the image view.
   ///
   /// - parameter data: GIF image data.
-  public func animate(withGIFData data: Data) {
+  open func animate(withGIFData data: Data) {
     prepareForAnimation(withGIFData: data)
     startAnimatingGIF()
   }
 
   /// Updates the `image` property of the image view if necessary. This method should not be called manually.
-  override public func display(_ layer: CALayer) {
+  override open func display(_ layer: CALayer) {
     image = animator?.currentFrameImage ?? image
   }
 
   /// Starts the image view animation.
-  public func startAnimatingGIF() {
+  open func startAnimatingGIF() {
     if animator?.isAnimatable ?? false {
       displayLink.isPaused = false
     }
   }
 
   /// Stops the image view animation.
-  public func stopAnimatingGIF() {
+  open func stopAnimatingGIF() {
     displayLink.isPaused = true
   }
 
   /// Reset the image view values.
-  public func prepareForReuse() {
+  open func prepareForReuse() {
     stopAnimatingGIF()
     animator = nil
   }

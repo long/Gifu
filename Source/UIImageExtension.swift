@@ -1,3 +1,5 @@
+import UIKit
+
 /// A `UIImage` extension that makes it easier to resize the image and inspect its size.
 
 extension UIImage {
@@ -26,8 +28,8 @@ extension UIImage {
   ///
   /// - parameter size: The constraining size of the image.
   /// - returns: A new resized image instance.
-  func filling(size: CGSize) -> UIImage {
-    let newSize = size.filling(size: size)
+  func filling(_ size: CGSize) -> UIImage {
+    let newSize = size.filling(size)
     return resized(to: newSize)
   }
 

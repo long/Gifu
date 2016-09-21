@@ -1,3 +1,4 @@
+import Foundation
 import UIKit
 import ImageIO
 
@@ -39,7 +40,7 @@ class Animator {
   /// - seealso: `needsPrescaling` in AnimatableImageView.
   var needsPrescaling = true
   /// Dispatch queue used for preloading images.
-  private lazy var preloadFrameQueue = DispatchQueue(label: "co.kaishin.Gifu.preloadQueue", attributes: DispatchQueueAttributes.serial, target: nil)
+  private lazy var preloadFrameQueue: DispatchQueue = DispatchQueue(label: "co.kaishin.Gifu.preloadQueue", target: nil)
   /// The current image frame to show.
   var currentFrameImage: UIImage? {
     return frame(at: currentFrameIndex)
@@ -60,8 +61,8 @@ class Animator {
   /// - parameter data: The raw GIF image data.
   /// - parameter delegate: An `Animatable` delegate.
   init(data: Data, size: CGSize, contentMode: UIViewContentMode, framePreloadCount: Int) {
-    let options: CFDictionary = [String(kCGImageSourceShouldCache): kCFBooleanFalse]
-    self.imageSource = CGImageSourceCreateWithData(data, options) ?? CGImageSourceCreateIncremental(options)
+    let options: NSDictionary = [kCGImageSourceShouldCache: kCFBooleanFalse]
+    self.imageSource = CGImageSourceCreateWithData(data as CFData, options) ?? CGImageSourceCreateIncremental(options)
     self.size = size
     self.contentMode = contentMode
     self.preloadFrameCount = framePreloadCount
@@ -69,7 +70,7 @@ class Animator {
 
   // MARK: - Frames
   /// Loads the frames from an image source, resizes them, then caches them in `animatedFrames`.
-  func prepareFrames(_ completionHandler: ((Void) -> Void)? = .none) {
+  func prepareFrames(_ completionHandler: ((Void) -> Void)? = nil) {
     frameCount = Int(CGImageSourceGetCount(imageSource))
     animatedFrames.reserveCapacity(frameCount)
     preloadFrameQueue.async {
@@ -122,14 +123,14 @@ private extension Animator {
   /// - parameter index: The index of the frame to load.
   /// - returns: An optional `UIImage` instance.
   func loadFrame(at index: Int) -> UIImage? {
-    guard let imageRef = CGImageSourceCreateImageAtIndex(imageSource, index, nil) else { return .none }
+    guard let imageRef = CGImageSourceCreateImageAtIndex(imageSource, index, nil) else { return nil }
     let image = UIImage(cgImage: imageRef)
     let scaledImage: UIImage?
 
     if needsPrescaling {
       switch self.contentMode {
       case .scaleAspectFit: scaledImage = image.constrained(by: size)
-      case .scaleAspectFill: scaledImage = image.filling(size: size)
+      case .scaleAspectFill: scaledImage = image.filling(size)
       default: scaledImage = image.resized(to: size)
       }
     } else {
@@ -165,7 +166,7 @@ private extension Animator {
 
   /// Increments the `currentFrameIndex` property.
   func incrementCurrentFrameIndex() {
-    currentFrameIndex = increment(index: currentFrameIndex)
+    currentFrameIndex = increment(currentFrameIndex)
   }
 
   /// Increments a given frame index, taking into account the `frameCount` and looping when necessary.
@@ -173,7 +174,7 @@ private extension Animator {
   /// - parameter index: The `Int` value to increment.
   /// - parameter byValue: The `Int` value to increment with.
   /// - returns: A new `Int` value.
-  func increment(index: Int, by value: Int = 1) -> Int {
+  func increment(_ index: Int, by value: Int = 1) -> Int {
     return (index + value) % frameCount
   }
 
@@ -182,8 +183,8 @@ private extension Animator {
   /// - parameter index: Starting index.
   /// - returns: An array of indexes to preload.
   func preloadIndexes(withStartingIndex index: Int) -> [Int] {
-    let nextIndex = increment(index: index)
-    let lastIndex = increment(index: index, by: preloadFrameCount)
+    let nextIndex = increment(index)
+    let lastIndex = increment(index, by: preloadFrameCount)
 
     if lastIndex >= nextIndex {
       return [Int](nextIndex...lastIndex)

@@ -1,3 +1,4 @@
+import Foundation
 import ImageIO
 import MobileCoreServices
 import UIKit
@@ -23,7 +24,7 @@ func CGImageFrameDuration(with imageSource: CGImageSource, atIndex index: Int) -
 ///
 /// - returns: A capped frame duration.
 func capDuration(with duration: Double) -> Double? {
-  if duration < 0 { return .none }
+  if duration < 0 { return nil }
   let threshold = 0.02 - Double(FLT_EPSILON)
   let cappedDuration = duration < threshold ? 0.1 : duration
   return cappedDuration
@@ -35,7 +36,7 @@ func capDuration(with duration: Double) -> Double? {
 func frameDuration(with properties: GIFProperties) -> Double? {
   guard let unclampedDelayTime = properties[String(kCGImagePropertyGIFUnclampedDelayTime)],
     let delayTime = properties[String(kCGImagePropertyGIFDelayTime)]
-    else { return .none }
+    else { return nil }
 
   return duration(withUnclampedTime: unclampedDelayTime, andClampedTime: delayTime)
 }
@@ -54,7 +55,7 @@ extension CGImageSource {
   ///
   /// - returns: A boolean value that is `true` if the image source contains animated GIF data.
   var isAnimatedGIF: Bool {
-    let isTypeGIF = UTTypeConformsTo(CGImageSourceGetType(self) ?? "", kUTTypeGIF)
+    let isTypeGIF = UTTypeConformsTo(CGImageSourceGetType(self) ?? "" as CFString, kUTTypeGIF)
     let imageCount = CGImageSourceGetCount(self)
     return isTypeGIF != false && imageCount > 1
   }
@@ -65,6 +66,6 @@ extension CGImageSource {
   /// - returns: A dictionary containing the GIF properties at the passed in index.
   func properties(at index: Int) -> GIFProperties? {
     let imageProperties = CGImageSourceCopyPropertiesAtIndex(self, index, nil) as Dictionary?
-    return imageProperties?[String(kCGImagePropertyGIFDictionary)] as? GIFProperties
+    return imageProperties?[kCGImagePropertyGIFDictionary] as? GIFProperties
   }
 }

@@ -1,3 +1,5 @@
+import Foundation
+
 /// Keeps a reference to an `UIImage` instance and its duration as a GIF frame.
 struct AnimatedFrame {
   /// The image that should be used for this frame.
@@ -13,7 +15,7 @@ struct AnimatedFrame {
 
   /// Whether the AnimatedFrame instance contains an image or not.
   var isPlaceholder: Bool {
-    return image == .none
+    return image == nil
   }
 
   /// Takes an optional image and returns an non-placeholder `AnimatedFrame`.
